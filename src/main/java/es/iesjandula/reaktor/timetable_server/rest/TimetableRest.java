@@ -48,6 +48,13 @@ import es.iesjandula.reaktor.timetable_server.models.Rol;
 import es.iesjandula.reaktor.timetable_server.models.Student;
 import es.iesjandula.reaktor.timetable_server.models.Teacher;
 import es.iesjandula.reaktor.timetable_server.models.TeacherMoment;
+import es.iesjandula.reaktor.timetable_server.models.entities.ActividadEntity;
+import es.iesjandula.reaktor.timetable_server.models.entities.ActividadEntityId;
+import es.iesjandula.reaktor.timetable_server.models.entities.AsignaturaEntity;
+import es.iesjandula.reaktor.timetable_server.models.entities.AulaEntity;
+import es.iesjandula.reaktor.timetable_server.models.entities.GrupoEntity;
+import es.iesjandula.reaktor.timetable_server.models.entities.ProfesorEntity;
+import es.iesjandula.reaktor.timetable_server.models.entities.TimeSlotEntity;
 import es.iesjandula.reaktor.timetable_server.models.parse.Actividad;
 import es.iesjandula.reaktor.timetable_server.models.parse.Asignatura;
 import es.iesjandula.reaktor.timetable_server.models.parse.Asignaturas;
@@ -72,6 +79,12 @@ import es.iesjandula.reaktor.timetable_server.models.parse.Profesor;
 import es.iesjandula.reaktor.timetable_server.models.parse.Profesores;
 import es.iesjandula.reaktor.timetable_server.models.parse.TimeSlot;
 import es.iesjandula.reaktor.timetable_server.models.parse.TramosHorarios;
+import es.iesjandula.reaktor.timetable_server.models.repositories.ActividadRepository;
+import es.iesjandula.reaktor.timetable_server.models.repositories.AsignaturaRepository;
+import es.iesjandula.reaktor.timetable_server.models.repositories.AulaRepository;
+import es.iesjandula.reaktor.timetable_server.models.repositories.GrupoRepository;
+import es.iesjandula.reaktor.timetable_server.models.repositories.ProfesorRepository;
+import es.iesjandula.reaktor.timetable_server.models.repositories.TimeSlotRepository;
 import es.iesjandula.reaktor.timetable_server.repository.IAlumnoRepository;
 import es.iesjandula.reaktor.timetable_server.repository.ICursosRepository;
 import es.iesjandula.reaktor.timetable_server.repository.IPuntosConvivenciaALumnoCursoRepository;
@@ -91,6 +104,25 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TimetableRest
 {
+	
+	@Autowired
+	TimeSlotRepository timeSlotRepository;
+	
+	@Autowired
+	GrupoRepository grupoRepository;
+	
+	@Autowired
+	AsignaturaRepository asignaturaRepository;
+	
+	@Autowired
+	ProfesorRepository profesorRepository;
+	
+	@Autowired
+	AulaRepository aulaRepository;
+	
+	@Autowired
+	ActividadRepository actividadRepository;
+	
 	/** Attribute centroPdfs , used for get the info of PDFS */
 	private Centro centroPdfs;
 	
@@ -289,7 +321,19 @@ public class TimetableRest
 					// --------------------------------------------------------------------------------------------------
 					datos.setTramosHorarios(tramosHorarios);
 					// --------------------------------------------------------------------------------------------------
-
+					
+					for(TimeSlot tramoHorario :tramosList) {
+						this.timeSlotRepository.saveAndFlush(tramoHorario);
+					}
+					
+					for(Profesor profesor :profesoresList) {
+						this.profesorRepository.saveAndFlush(profesor);
+					}
+					
+					
+					
+					
+					
 					// ---- END OF DATOS ---
 					centro.setDatos(datos);
 
