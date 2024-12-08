@@ -12,6 +12,8 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +24,8 @@ import es.iesjandula.reaktor.timetable_server.models.Classroom;
 import es.iesjandula.reaktor.timetable_server.models.Student;
 import es.iesjandula.reaktor.timetable_server.models.User;
 import es.iesjandula.reaktor.timetable_server.models.Visitas;
+import es.iesjandula.reaktor.timetable_server.models.entities.AulaEntity;
+import es.iesjandula.reaktor.timetable_server.models.entities.AulaPlanoEntity;
 import es.iesjandula.reaktor.timetable_server.models.parse.Actividad;
 import es.iesjandula.reaktor.timetable_server.models.parse.Asignatura;
 import es.iesjandula.reaktor.timetable_server.models.parse.Aula;
@@ -33,11 +37,20 @@ import es.iesjandula.reaktor.timetable_server.models.parse.HorarioAula;
 import es.iesjandula.reaktor.timetable_server.models.parse.HorarioProf;
 import es.iesjandula.reaktor.timetable_server.models.parse.Profesor;
 import es.iesjandula.reaktor.timetable_server.models.parse.TimeSlot;
+import es.iesjandula.reaktor.timetable_server.models.repositories.AulaPlanoRepository;
+import es.iesjandula.reaktor.timetable_server.models.repositories.AulaRepository;
 
+@Service
 public class TimeTableUtils 
 {
 	/**Logger de la clase */
 	private static Logger log = LogManager.getLogger();
+	
+	@Autowired
+	private AulaRepository aulaRepository ;
+	
+	@Autowired
+	private AulaPlanoRepository aulaPlanoRepository ;
 	
 	/**Clase que gestiona las operaciones relacionadas con la fecha y hora */
 	private TimeOperations timeOperation;
@@ -317,63 +330,68 @@ public class TimeTableUtils
 	 * ya que luego en el frontend saldran datos erroneos
 	 * @return lista de aulas para los planos en el front
 	 */
-	public List<AulaPlano> parseAulasPlano(byte[]data) throws HorariosError
+	public List<AulaPlanoEntity> parseAulasPlano(byte[]data) throws HorariosError
 	{
-		List<AulaPlano> aulas = new LinkedList<AulaPlano>();
-		//Transformamos los datos a string
-		String content = new String(data);
-		
-		//Los separamos por \n
-		String [] splitContent = content.split("\n");
-		
-		//Comprobamos que la cabecera y los datos esten bien formados y parseamos los datos¡
-		if(!splitContent[0].trim().equals("height,width,top,right,left,planta,numIntAu,abreviatura,nombre"))
-		{
-			throw new HorariosError(406,"Los datos del fichero son incorrectos la cabecera del csv debe de ser height,width,top,right,left,planta,numIntAu,abreviatura,nombre");
-		}
-		else
-		{
-			for(String rawData:splitContent)
-			{
-				//Nos saltamos la cabecera
-				if(rawData.trim().equals("height,width,top,right,left,planta,numIntAu,abreviatura,nombre"))
-				{
-					continue;
-				}
-				else
-				{
-					//Separamos los datos por ,
-					String [] attributes = rawData.split(",");
-					
-					try
-					{
-						//Creamos los atributos y lo añadimos a la lista
-						double height = Double.parseDouble(attributes[0].trim());
-						double width = Double.parseDouble(attributes[1].trim());
-						double top = Double.parseDouble(attributes[2].trim());
-						double right = Double.parseDouble(attributes[3].trim());
-						double left = Double.parseDouble(attributes[4].trim());
-						Aula aula = new Aula(attributes[6].trim(),attributes[7].trim(),attributes[8].trim());
-						
-						aulas.add(new AulaPlano(height,width,top,right,left,attributes[5].trim(),aula));	
-					}
-					catch(NumberFormatException exception)
-					{
-						String message = "Las medidas estan mal formadas";
-						log.error(message,exception);
-						throw new HorariosError(406,message,exception);
-					}
-					catch(NullPointerException exception)
-					{
-						String message = "Hay datos que vienen vacios";
-						log.error(message,exception);
-						throw new HorariosError(406,message,exception);
-					}			
-				}
-			}
-		}
-		
-		return aulas;
+		List<AulaPlanoEntity> aulas = new LinkedList<AulaPlanoEntity>();
+	    String content = new String(data);
+
+	    // Los separamos por líneas
+	    String[] splitContent = content.split("\n");
+
+	    // Comprobamos la cabecera
+	    if (!splitContent[0].trim().equals("height,width,top,right,left,planta,numIntAu,abreviatura,nombre")) {
+	        throw new HorariosError(406, "Los datos del fichero son incorrectos. La cabecera del CSV debe ser height,width,top,right,left,planta,numIntAu,abreviatura,nombre");
+	    }
+
+	    for (String rawData : splitContent) {
+	        // Nos saltamos la cabecera
+	        if (rawData.trim().equals("height,width,top,right,left,planta,numIntAu,abreviatura,nombre")) {
+	            continue;
+	        }
+
+	        String[] attributes = rawData.split(",");
+	        try {
+	            // Procesar datos del aula
+	            double height = Double.parseDouble(attributes[0].trim());
+	            double width = Double.parseDouble(attributes[1].trim());
+	            double top = Double.parseDouble(attributes[2].trim());
+	            double right = Double.parseDouble(attributes[3].trim());
+	            double left = Double.parseDouble(attributes[4].trim());
+
+	            // Crear el objeto AulaEntity (la entidad JPA)
+	            AulaEntity aulaEntity = new AulaEntity();
+	            aulaEntity.setNumIntAu(attributes[6].trim());  // Usamos numIntAu como ID
+	            aulaEntity.setAbreviatura(attributes[7].trim());
+	            aulaEntity.setNombre(attributes[8].trim());
+
+	            // Crear el objeto AulaPlanoEntity
+	            AulaPlanoEntity aulaPlano = new AulaPlanoEntity(height, width, top, right, left, attributes[5].trim(), aulaEntity);
+
+	            // Guardar en la lista
+	            aulas.add(aulaPlano);
+	        } catch (NumberFormatException exception) {
+	            String message = "Las medidas están mal formadas";
+	            log.error(message, exception);
+	            throw new HorariosError(406, message, exception);
+	        } catch (NullPointerException exception) {
+	            String message = "Hay datos vacíos";
+	            log.error(message, exception);
+	            throw new HorariosError(406, message, exception);
+	        }
+	    }
+
+	    // Guardar las entidades en la base de datos
+	    // Primero guardamos las aulas para tener sus ids generados
+	    for (AulaPlanoEntity aulaPlano : aulas) {
+	        AulaEntity aulaEntity = aulaPlano.getAula();  // Asegúrate de que sea la entidad correcta
+	        if (aulaEntity.getNumIntAu() == null || aulaEntity.getNumIntAu().isEmpty()) {
+	            // Si no tiene numIntAu, es una nueva aula y debe ser guardada
+	            aulaRepository.save(aulaEntity);  // Guardar el aulaEntity si no tiene numIntAu
+	        }
+	        aulaPlanoRepository.save(aulaPlano); // Guardar el aulaPlano
+	    }
+
+	    return aulas;
 	}
 	
 	/**
@@ -384,41 +402,18 @@ public class TimeTableUtils
 	 * @return lista de aulas filtradas
 	 * @throws HorariosError
 	 */
-	public List<AulaPlano> buscarPorPlanta(String planta,List<AulaPlano> aulas) throws HorariosError
-	{ 
-		//Establecemos "" por defecto en caso de que planta sea nulo
-		planta = planta==null ? "" : planta;
-		
-		List<AulaPlano> aulasEncontradas = new LinkedList<AulaPlano>();
-		
-		if(aulas.isEmpty())
-		{
-			throw new HorariosError(404,"No se ha cargado ninguna informacion sobre aulas");
-		}
-		
-		if(!planta.isEmpty())
-		{
-			for(AulaPlano aula:aulas)
-			{
-				if(aula.getPlanta().equals(planta))
-				{
-					aulasEncontradas.add(aula);
-				}
-			}
-		}
-		else
-		{
-			aulasEncontradas = aulas;
-		}
-		
-		
-		if(aulasEncontradas.isEmpty())
-		{
-			throw new HorariosError(404,"La planta introducida es erronea, su valor debe de se PLANTA BAJA, PRIMERA PLANTA, SEGUNDA PLANTA, en literal");
-		}
-		
-		return aulasEncontradas;
-	}
+	public List<AulaEntity> buscarPorPlanta(String planta) throws HorariosError {
+        if (planta == null || planta.isEmpty()) {
+            return aulaRepository.findAll();
+        }
+
+        List<AulaEntity> aulasEncontradas = aulaRepository.findByPlanta(planta);
+        if (aulasEncontradas.isEmpty()) {
+            throw new HorariosError(404, "La planta introducida es errónea. Debe ser PLANTA BAJA, PRIMERA PLANTA, SEGUNDA PLANTA, en literal.");
+        }
+
+        return aulasEncontradas;
+    }
 	
 	/**
 	 * Metodo que encuentra un profesor en tiempo real usando el aula seleccionada en los planos
