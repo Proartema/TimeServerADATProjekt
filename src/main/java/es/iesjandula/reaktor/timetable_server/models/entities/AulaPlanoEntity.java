@@ -24,8 +24,8 @@ public class AulaPlanoEntity
 	private double height ;
     private double width ;
     private double top ;
-    private double right ;
-    private double left ;
+    private double derecha ;
+    private double izquierda ;
     private String planta ;
     private String numIntAu ;
     
@@ -33,12 +33,12 @@ public class AulaPlanoEntity
     @JoinColumn(name = "aula_id")
     private AulaEntity aula ;
     
-    public AulaPlanoEntity(double height, double width, double top, double right, double left, String planta, AulaEntity aula) {
+    public AulaPlanoEntity(double height, double width, double top, double derecha, double izquierda, String planta, AulaEntity aula) {
         this.height = height;
         this.width = width;
         this.top = top;
-        this.right = right;
-        this.left = left;
+        this.derecha = derecha;
+        this.izquierda = izquierda;
         this.planta = planta;
         this.aula = aula;
     }

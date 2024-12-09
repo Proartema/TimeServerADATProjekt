@@ -350,13 +350,45 @@ public class TimetableRest {
 					// --------------------------------------------------------------------------------------------------
 					datos.setTramosHorarios(tramosHorarios);
 					// --------------------------------------------------------------------------------------------------
-
+					
+					TimeSlotEntity tramoIterado = new TimeSlotEntity();
 					for (TimeSlot tramoHorario : tramosList) {
-						this.timeSlotRepository.saveAndFlush(tramoHorario);
+						
+						tramoIterado.setNumTr(tramoHorario.getNumTr());
+						tramoIterado.setDayNumber(tramoHorario.getDayNumber());
+						tramoIterado.setStartHour(tramoHorario.getStartHour());
+						tramoIterado.setEndHour(tramoHorario.getEndHour());
+						this.timeSlotRepository.saveAndFlush(tramoIterado);
 					}
-
+					ProfesorEntity profesorIterado = new ProfesorEntity();
 					for (Profesor profesor : profesoresList) {
-						this.profesorRepository.saveAndFlush(profesor);
+						profesorIterado.setNumIntPR(profesor.getNumIntPR());
+						profesorIterado.setAbreviatura(profesor.getAbreviatura());
+						profesorIterado.setNombre(profesor.getNombre());
+						profesorIterado.setPrimerApellido(profesor.getPrimerApellido());
+						profesorIterado.setSegundoApellido(profesor.getSegundoApellido());
+						this.profesorRepository.saveAndFlush(profesorIterado);
+					}
+					AsignaturaEntity asignaturaIterada = new AsignaturaEntity();
+					for (Asignatura asignatura : asignaturasList) {
+						asignaturaIterada.setNumIntAs(asignatura.getNumIntAs());
+						asignaturaIterada.setAbreviatura(asignatura.getAbreviatura());
+						asignaturaIterada.setNombre(asignatura.getNombre());
+						this.asignaturaRepository.saveAndFlush(asignaturaIterada);
+					}
+					GrupoEntity grupoIterado = new GrupoEntity();
+					for (Grupo grupo : gruposList) {
+						grupoIterado.setNumIntGr(grupo.getNumIntGr());
+						grupoIterado.setAbreviatura(grupo.getAbreviatura());
+						grupoIterado.setNombre(grupo.getNombre());
+						this.grupoRepository.saveAndFlush(grupoIterado);
+					}
+					AulaEntity aulaIterada = new AulaEntity();
+					for (Aula aula : aulasList) {
+						aulaIterada.setNumIntAu(aula.getNumIntAu());
+						aulaIterada.setAbreviatura(aula.getAbreviatura());
+						aulaIterada.setNombre(aula.getNombre());
+						this.aulaRepository.saveAndFlush(aulaIterada);
 					}
 
 					// ---- END OF DATOS ---

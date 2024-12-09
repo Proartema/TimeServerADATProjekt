@@ -1,5 +1,6 @@
 package es.iesjandula.reaktor.timetable_server.models.entities;
 
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
@@ -15,15 +16,17 @@ import lombok.NoArgsConstructor;
 public class ActividadEntity 
 {
 
-	@Id
+	@EmbeddedId
+	private ActividadEntityId actividadEntityId;
+	
 	@ManyToOne
 	private TimeSlotEntity tramo;
 
-	@Id
+	
 	@ManyToOne
 	private AulaEntity aula;
 
-	@Id
+	
 	@ManyToOne
 	private ProfesorEntity profesor;
 

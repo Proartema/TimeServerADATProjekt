@@ -3,7 +3,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/reaktor_timetableserver
     username: root
-    password: qP8u-Ab80S_
+    password: lyoko2
     hikari:
       connection-timeout: 60000
       maximum-pool-size: 5

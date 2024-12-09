@@ -27,5 +27,11 @@ public class AulaEntity
 	
 	@OneToMany(mappedBy = "aula")
 	private List<AulaPlanoEntity> aulasPlanos ;
+	
+	public AulaEntity(String numIntAu, String abreviatura, String nombre) {
+		this.numIntAu= numIntAu;
+		this.abreviatura= abreviatura;
+		this.nombre= nombre;
+	}
 
 }
